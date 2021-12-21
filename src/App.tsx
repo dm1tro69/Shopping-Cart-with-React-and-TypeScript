@@ -5,7 +5,7 @@ import {LinearProgress} from "@material-ui/core";
 import {Grid} from "@material-ui/core";
 import AddShoppingCartIcon from "@material-ui/icons/AddShoppingCart";
 import {Badge} from "@material-ui/core";
-import {Wrapper} from "./App.styles";
+import {Wrapper, StyledButton} from "./App.styles";
 import Item from "./Item/Item";
 
 export type CartItemType = {
@@ -24,7 +24,8 @@ const getProducts = async (): Promise<CartItemType[]> => {
 
 const App = () => {
 
-    const [] = useState()
+    const [cartOpen, setCartOpen] = useState(false)
+    const [cartItems, setCartItems] = useState([] as CartItemType[])
 
     const {data, isLoading, error} = useQuery<CartItemType[]>(
         'products',
@@ -32,7 +33,7 @@ const App = () => {
         )
     console.log(data)
 
-   const getTotalItems = () => {
+   const getTotalItems = (items: CartItemType[]) => {
         return null
     }
     const handleAddToCard = (clickedItem: CartItemType) => {
@@ -52,9 +53,25 @@ const App = () => {
 
   return (
     <div >
-        {data!.map((item) => {
+        {data!.map((item, i) => {
             return (
-                <Item key={item.id} item={item} handleAddToCard={handleAddToCard}/>
+                <Wrapper key={i}>
+                    <Drawer anchor={'right'} open={cartOpen} onClose={() => setCartOpen(false)}>
+                         Cart goes here
+                    </Drawer>
+                    <StyledButton onClick={() => setCartOpen(true)}>
+                        <Badge color={'error'} badgeContent={getTotalItems(cartItems)}>
+                            <AddShoppingCartIcon/>
+                        </Badge>
+                    </StyledButton>
+                    <Grid container spacing={3}>
+                        {data?.map((item: CartItemType) => (
+                            <Grid item key={item.id} xs={12} sm={4}>
+                                <Item item={item} handleAddToCard={handleAddToCard}/>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Wrapper>
             )
         })}
     </div>
