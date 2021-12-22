@@ -7,6 +7,7 @@ import AddShoppingCartIcon from "@material-ui/icons/AddShoppingCart";
 import {Badge} from "@material-ui/core";
 import {Wrapper, StyledButton} from "./App.styles";
 import Item from "./Item/Item";
+import Cart from "./Cart/Cart";
 
 export type CartItemType = {
     id: number
@@ -34,13 +35,34 @@ const App = () => {
     console.log(data)
 
    const getTotalItems = (items: CartItemType[]) => {
-        return null
+        return items.reduce((acc: number, item)=> {
+          return acc + item.amount
+        }, 0)
     }
     const handleAddToCard = (clickedItem: CartItemType) => {
-        return null
+        return setCartItems((prevState) => {
+            const isItemInCart = prevState.find(item => item.id === clickedItem.id)
+            if (isItemInCart){
+                return prevState.map(item => (
+                    item.id === clickedItem.id
+                    ? {...item, amount: item.amount + 1}
+                        : item
+                ))
+            }
+            return [...prevState, {...clickedItem, amount: 1}]
+        })
     }
-    const handleRemoveFromCard = () => {
-        return null
+    const handleRemoveFromCard = (id: number) => {
+        setCartItems((prev) => (
+            prev.reduce((acc, item) => {
+                 if(item.id === id){
+                     if (item.amount === 1) return acc
+                     return [...acc, {...item, amount: item.amount - 1}]
+                 }else {
+                     return [...acc, item]
+                 }
+            }, [] as CartItemType[])
+        ))
     }
 
     if (isLoading){
@@ -57,7 +79,11 @@ const App = () => {
             return (
                 <Wrapper key={i}>
                     <Drawer anchor={'right'} open={cartOpen} onClose={() => setCartOpen(false)}>
-                         Cart goes here
+                         <Cart
+                             addToCart={handleAddToCard}
+                             cartItems={cartItems}
+                             removeFromCart={handleRemoveFromCard}
+                         />
                     </Drawer>
                     <StyledButton onClick={() => setCartOpen(true)}>
                         <Badge color={'error'} badgeContent={getTotalItems(cartItems)}>
